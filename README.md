@@ -14,23 +14,28 @@ You should be able to install it as any python package.
 moment.
 
 
-    $ python runningjobs.py
-    r: 347
-    t: 15
-    qw: 4 
-
+```shell
+$ python runningjobs.py
+r: 347
+t: 15
+qw: 4
+```
 
 * setqueues.py -- sets the queues of all queued jobs to a predefined queue 
 string (strings are stored in cfg file, see note below).
 
 
-    $ python setqueues.py serial    
+```shell
+$ python setqueues.py serial    
+```
 
 * setthrottle.py -- sets the throttle limit of all array jobs to the value of 
 the provided command line argument.
 
 
-    $ python setthrottle.py 10
+```shell
+$ python setthrottle.py 10
+```
 
 ##### Note
 
