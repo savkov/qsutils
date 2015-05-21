@@ -29,6 +29,15 @@ import qsutils as qt
 import ConfigParser
 from ConfigParser import NoOptionError
 
+# You will need to create a config file with queue strings as passed to SGE.
+# Example:
+#
+# [queues]
+# serial=serial.q,serial_lowmem.q
+# parallel=parallel.q
+
+# Note: only commas between queue names
+
 cfg = ConfigParser.ConfigParser()
 try:
     cfg.readfp(open('queues.cfg'))
