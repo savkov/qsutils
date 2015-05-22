@@ -11,7 +11,6 @@ setup(name='qsutils',
       author_email='aleksandar@savkov.eu',
       url='https://www.github.com/asavkov/qsutils/',
       package_dir={'': 'src'},
-      packages=[''],
       entry_points={
           'console_scripts': [
               'qsutils=qsutils:main',
