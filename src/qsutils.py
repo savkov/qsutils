@@ -24,8 +24,6 @@
 __author__ = 'Aleksandar Savkov'
 
 import re
-import io
-import pandas as pd
 import subprocess as sub
 
 from collections import Counter
@@ -51,44 +49,50 @@ def parse_qs(qs):
 
     :param qs: qstat output
     :return: parsed qstat table
-    :rtype: DataFrame
+    :rtype: dict
     """
     qss = re.sub('[-]+\n', '', qs)
     qss = re.sub(' at', '_at', qss)
     header = qss.split('\n')[0]
     it = re.finditer('([^ ]+ +)', header)
     splits = [x.start() for x in it][1:]
-    rows = []
-    for line in qss.split('\n'):
+
+    # scan header
+    names = [x.strip() for x in re.sub(r' +', ' ', header).split(' ') if x.strip()]
+
+    # initialise the table
+    table = {x: [] for x in names}
+
+    # scan the rest of the rows
+    for line in qss.split('\n')[1:]:
         if line.replace(' ', '') == '':
             continue
         start = 0
-        cols = []
-        for end in splits:
-            cols.append(line[start:end].strip())
+        for col_n, end in zip(names, splits):
+            table[col_n].append(line[start:end].strip())
             start = end
-        cols.append(line[start:].strip())
-        rows.append(','.join(cols))
-    sio = io.StringIO(unicode('\n'.join(rows)))
-    return pd.io.parsers.read_csv(sio, dtype='object')
+        table[names[-1]].append(line[start:].strip())
+
+    return table
 
 
 def get_ajs(qs):
-    """Returns a DataFrame with all array job entries.
+    """Returns all array job entries.
 
     :param qs: qstat table
     :return: array job entries
-    :rtype: DataFrame
+    :rtype: list
     """
-    return qs[qs['ja-task-ID'].str.contains('-')]
+    ids = [i for i, x in enumerate(qs['ja-task-ID']) if '-' in x]
+    return _slice_table(qs, ids)
 
 
 def get_jids(qs):
-    """Returns a DataFrame with all job IDs.
+    """Returns all job IDs.
 
     :param qs: qstat table
     :return: job IDs
-    :rtype: DataFrame
+    :rtype: list
     """
     return qs['job-ID']
 
@@ -98,9 +102,10 @@ def get_queued_jobs(qs):
 
     :param qs: qstat table
     :return: queued job entries
-    :rtype: DataFrame
+    :rtype: list
     """
-    return qs[qs['state'] == 'qw']
+    ids = [i for i, x in enumerate(qs['state']) if x == 'qw']
+    return _slice_table(qs, ids)
 
 
 def count_jstats(qs):
@@ -128,3 +133,12 @@ def count_remaining_jobs(qs):
         m = re.match('(\d+)-(\d+):(\d+)', aj)
         queued_aj.append(int(m.group(2)) - int(m.group(1)))
     return sum(queued_aj) + queued - len(ajs)
+
+
+def _slice_table(table, ids):
+    keys = table.keys()
+    new_table = {k: [] for k in keys}
+    for id in ids:
+        for k in keys:
+            new_table[k].append(table[k][id])
+    return new_table
