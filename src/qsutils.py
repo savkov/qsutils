@@ -218,8 +218,8 @@ def _throttle_jobs(user=None, limit=0, **kwargs):
     qs = get_qs(_get_user_name())
     ajs = get_ajs(qs)
     for job_id in list(get_jids(ajs)):
-        print('Running \'%s\'' % cmd)
         cmd = 'qalter -tc %s %s' % (limit, job_id)
+        print('Running \'%s\'' % cmd)
         os.system(cmd)
 
 
