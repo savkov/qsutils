@@ -4,15 +4,11 @@ of SGE's qstat command
 
 ### Installation
 
-You should be able to install it as any python package.
+`qtutils` currently only supports Python 2 (Python3 support is in the works). Install it from sources:
     
     git clone https://github.com/savkov/qsutils.git
     cd qsutils
     python setup.py install
-
-or straight from github:
-
-    pip install git+ssh://git@github.com/savkov/qsutils.git
 
 
 ### Usage
