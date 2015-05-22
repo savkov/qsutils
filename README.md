@@ -4,7 +4,7 @@ of SGE's qstat command
 
 ### Installation
 
-`qtutils` currently only supports Python 2 (Python3 support is in the works). Install it from sources:
+`qtutils` works on both Python 2 and Python 3. Install it from sources:
     
     git clone https://github.com/savkov/qsutils.git
     cd qsutils

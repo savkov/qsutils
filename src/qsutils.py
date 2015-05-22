@@ -46,7 +46,7 @@ def get_qs(user):
     :rtype: DataFrame
     """
     qs_str = sub.check_output('qstat -u {}'.format(user), shell=True)
-    return parse_qs(qs_str)
+    return parse_qs(qs_str.decode())
 
 
 def parse_qs(qs):
