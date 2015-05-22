@@ -191,11 +191,8 @@ def _print_running_jobs(user=None, **kwargs):
         print('{}: {}'.format(k, counts[k]))
 
 
-def _set_queues(user=None, alias=None, **kwargs):
-    if not user:
-        user = _get_user_name()
-    print('Setting queues of user %s to %s' % (user, alias))
-
+def _set_queues(alias=None, **kwargs):
+    print('Setting queues of to', alias)
     cfg = _parse_cfg_file()
     try:
         q = cfg.get('queues', alias)
@@ -210,11 +207,8 @@ def _set_queues(user=None, alias=None, **kwargs):
         os.system(cmd)
 
 
-def _throttle_jobs(user=None, limit=0, **kwargs):
-    if not user:
-        user = _get_user_name()
-
-    print('Limiting array jobs of %s to %d' % (user, limit))
+def _throttle_jobs(limit=0, **kwargs):
+    print('Limiting array jobs of to', limit)
     qs = get_qs(_get_user_name())
     ajs = get_ajs(qs)
     for job_id in list(get_jids(ajs)):
@@ -225,11 +219,11 @@ def _throttle_jobs(user=None, limit=0, **kwargs):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--user', '-u', default=None)
     subparsers = parser.add_subparsers()
 
     parser_jobs = subparsers.add_parser('jobs', help='List your current jobs')
     parser_jobs.set_defaults(func=_print_running_jobs)
+    parser_jobs.add_argument('--user', '-u', default=None)
 
     parser_throttle = subparsers.add_parser('throttle', help='Throttle your current jobs')
     parser_throttle.add_argument('limit', type=int, help='Maximum jobs in job array')

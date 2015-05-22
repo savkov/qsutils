@@ -25,6 +25,9 @@ $ qsutils jobs
 r: 347
 t: 15
 qw: 4
+
+# You can also specify a user name, e.g.
+$ qsutils --user mmb28 jobs
 ```
 
 * Set the queues of all queued jobs to a predefined queue 
@@ -42,17 +45,6 @@ the provided command line argument.
 ```shell
 $ qsutils throttle 10
 ```
-
-All commands above take an optional user name, e.g.
-
-```shell
-$ qsutils --user mmb28 jobs
-r: 347
-t: 15
-qw: 4
-```
-
-Note in standard SGE environments you will not be able to modify other users' jobs.
 
 ##### Configuration file
 
