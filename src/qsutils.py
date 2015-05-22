@@ -205,7 +205,9 @@ def _set_queues(user=None, alias=None, **kwargs):
     qs = get_qs(_get_user_name())
     qjs = get_queued_jobs(qs)
     for id in list(get_jids(qjs)):
-        os.system('qalter -q %s %s' % (q, id))
+        cmd = 'qalter -q %s %s' % (q, id)
+        print('Running \'%s\'' % cmd)
+        os.system(cmd)
 
 
 def _throttle_jobs(user=None, limit=0, **kwargs):
@@ -216,7 +218,9 @@ def _throttle_jobs(user=None, limit=0, **kwargs):
     qs = get_qs(_get_user_name())
     ajs = get_ajs(qs)
     for job_id in list(get_jids(ajs)):
-        os.system('qalter -tc %s %s' % (limit, job_id))
+        print('Running \'%s\'' % cmd)
+        cmd = 'qalter -tc %s %s' % (limit, job_id)
+        os.system(cmd)
 
 
 def main():
