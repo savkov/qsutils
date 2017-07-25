@@ -2,7 +2,7 @@
 
 __author__ = 'Aleksandar Savkov'
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='qsutils',
       version='1.0',
@@ -11,5 +11,9 @@ setup(name='qsutils',
       author_email='aleksandar@savkov.eu',
       url='https://www.github.com/asavkov/qsutils/',
       package_dir={'': 'src'},
-      packages=['']
-     )
+      entry_points={
+          'console_scripts': [
+              'qsutils=qsutils:main',
+          ],
+      }
+      )

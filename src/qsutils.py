@@ -21,10 +21,19 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-__author__ = 'Aleksandar Savkov'
-
+from __future__ import print_function
+import argparse
+import os
 import re
+import sys
 import subprocess as sub
+import pwd
+
+if sys.version_info.major == 2:
+    import ConfigParser
+    from ConfigParser import NoOptionError
+else:
+    from configparser import ConfigParser, NoOptionError
 
 from collections import Counter
 
@@ -37,7 +46,7 @@ def get_qs(user):
     :rtype: DataFrame
     """
     qs_str = sub.check_output('qstat -u {}'.format(user), shell=True)
-    return parse_qs(qs_str)
+    return parse_qs(qs_str.decode())
 
 
 def parse_qs(qs):
@@ -142,3 +151,87 @@ def _slice_table(table, ids):
         for k in keys:
             new_table[k].append(table[k][id])
     return new_table
+
+
+def _parse_cfg_file():
+    """
+    You will need to create a config file with queue strings as passed to SGE.
+    Example:
+
+    [user]
+        name=mmb28
+
+    [queues]
+        serial=serial.q,serial_lowmem.q
+        parallel=parallel.q
+
+    Note: only commas between queue names
+    """
+    cfg = ConfigParser()
+    try:
+        with open('queues.cfg') as infile:
+            cfg.read_file(infile)
+        return cfg
+    except IOError:
+        print('Cannot find \'queues.cfg\'.')
+        sys.exit(1)
+
+
+def _get_user_name():
+    return pwd.getpwuid(os.getuid()).pw_name
+
+
+def _print_running_jobs(user=None, **kwargs):
+    if not user:
+        user = _get_user_name()
+    print('Jobs of user', user)
+    qs = get_qs(user)
+    counts = count_jstats(qs)
+    for k in counts.keys():
+        print('{}: {}'.format(k, counts[k]))
+
+
+def _set_queues(alias=None, **kwargs):
+    print('Setting queues of to', alias)
+    cfg = _parse_cfg_file()
+    try:
+        q = cfg.get('queues', alias)
+    except NoOptionError:
+        raise ValueError('Unknown queue alias \'%s\'' % alias)
+
+    qs = get_qs(_get_user_name())
+    qjs = get_queued_jobs(qs)
+    for id in list(get_jids(qjs)):
+        cmd = 'qalter -q %s %s' % (q, id)
+        print('Running \'%s\'' % cmd)
+        os.system(cmd)
+
+
+def _throttle_jobs(limit=0, **kwargs):
+    print('Limiting array jobs of to', limit)
+    qs = get_qs(_get_user_name())
+    ajs = get_ajs(qs)
+    for job_id in list(get_jids(ajs)):
+        cmd = 'qalter -tc %s %s' % (limit, job_id)
+        print('Running \'%s\'' % cmd)
+        os.system(cmd)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers()
+
+    parser_jobs = subparsers.add_parser('jobs', help='List your current jobs')
+    parser_jobs.set_defaults(func=_print_running_jobs)
+    parser_jobs.add_argument('--user', '-u', default=None)
+
+    parser_throttle = subparsers.add_parser('throttle', help='Throttle your current jobs')
+    parser_throttle.add_argument('limit', type=int, help='Maximum jobs in job array')
+    parser_throttle.set_defaults(func=_throttle_jobs)
+
+    parser_queues = subparsers.add_parser('queues', help='Change queues your job is running on')
+    parser_queues.add_argument('alias', type=str, help='Alias of queues list')
+    parser_queues.set_defaults(func=_set_queues)
+
+    args = parser.parse_args()
+    args.func(**args.__dict__)
